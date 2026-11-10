@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Touch / Light — A Lamp in Four States</title><link rel="stylesheet" href="styles.css"></head><body>
+<header><a class="brand" href="#">touch <em>/</em> light</a><nav><a href="#experiment">Experiment</a><a href="#model">The model</a><a href="#code">The code ↗</a></nav></header>
+<main><section class="hero"><div><p class="eyebrow">EVERYDAY OBJECTS, EXPLAINED · 01</p><h1>One touch.<br>Four possibilities.</h1><p class="intro">A familiar desk lamp becomes a small lesson in computation. Explore how a single touch turns a simple rule into light.</p><a class="primary" href="#experiment">Try the lamp ↗</a><p class="note">3 brightness levels / 1 off state / 1 input</p></div><figure><img src="lamp.png" alt="AI-generated image inspired by your black desk lamp, with a rectangular base and long horizontal light"><figcaption>YOUR EVERYDAY LAMP, REIMAGINED <span>AI-generated image</span></figcaption></figure></section>
+<section id="experiment"><div class="heading"><div><p class="eyebrow">01 / EXPERIMENT</p><h2>Touch. Observe. Repeat.</h2></div><p>Start at off. Each touch advances one state.<br>The fourth touch brings you back to the beginning.</p></div>
+<div class="lab"><div class="scene" id="scene" data-level="0"><span class="label">INTERACTIVE MODEL</span><div class="pool"></div><div class="drawing"><div class="head"></div><div class="post"></div><div class="base"></div><button id="touch" aria-label="Touch lamp control">⏻</button></div><p class="hint">Touch the power symbol<br><small>Keyboard: Tab to the control, then Enter or Space</small></p></div><div class="readout"><div class="status">CURRENT STATE <span id="number">00</span></div><h3 id="mode" aria-live="polite">Off</h3><p id="description">The lamp is off. Touch the control to begin.</p><div class="meter"><i></i><i></i><i></i></div><dl><div><dt>level</dt><dd id="level">0</dd></div><div><dt>isOn</dt><dd id="isOn">false</dd></div><div><dt>touchCount</dt><dd id="count">0</dd></div></dl><p id="equation" class="equation"></p><button id="reset">↺ Reset experiment</button></div></div>
+<div class="cycle"><div data-state="0">0 <b>Off</b></div><span>→</span><div data-state="1">1 <b>Low</b></div><span>→</span><div data-state="2">2 <b>Medium</b></div><span>→</span><div data-state="3">3 <b>High</b></div><span>↶</span></div><p class="note">Each arrow represents one touch. After high, return to off. The glow is illustrative, not a measurement; this demo does not control the physical lamp.</p></section>
+<section id="model"><div class="heading"><div><p class="eyebrow">02 / THE COMPUTATIONAL MODEL</p><h2>A little memory.<br>A predictable next step.</h2></div><p>A finite-state machine remembers the current state.<br>An input triggers a transition and changes the output.</p></div>
+<div class="concepts"><article><small>INPUT</small><h3>A distinct touch</h3><p>The touch-sensitive control sends one event. Holding a finger should not repeatedly advance the cycle.</p></article><article><small>STATE</small><h3>One of four modes</h3><p>The lamp remembers off, low, medium or high. These states become the integers 0, 1, 2 and 3.</p></article><article><small>OUTPUT</small><h3>The visible light</h3><p>State 0 means no light. States 1–3 produce increasing brightness. After high, the lamp turns off.</p></article></div>
+<div class="table-wrap"><table><caption>Define the variables before writing the behavior</caption><thead><tr><th>Name</th><th>Type</th><th>Meaning</th><th>Initial value</th></tr></thead><tbody>
+<tr><td><code>level</code></td><td>Number</td><td>Current state: 0 = off, 1 = low, 2 = medium, 3 = high</td><td>0</td></tr>
+<tr><td><code>modes</code></td><td>Array of strings</td><td>Mode names, indexed by level</td><td>["Off", "Low", "Medium", "High"]</td></tr>
+<tr><td><code>touchCount</code></td><td>Number</td><td>Touches since reset; for observation only</td><td>0</td></tr>
+<tr><td><code>isOn</code></td><td>Boolean (derived)</td><td>Whether level is greater than 0</td><td>false</td></tr></tbody></table></div></section>
+<section id="code"><div class="heading"><div><p class="eyebrow">03 / FROM BEHAVIOR TO CODE</p><h2>The rule behind the glow.</h2></div><p>HTML provides structure. CSS draws the lamp.<br>JavaScript remembers the state and updates the interface.</p></div>
+<div class="code-layout"><div class="code-window"><div class="toolbar">JavaScript · core logic <button id="copy">Copy code</button></div><pre><code id="code-content">const modes = ["Off", "Low", "Medium", "High"];
+let level = 0;
+let touchCount = 0;
+
+function touchControl() {
+  level = (level + 1) % modes.length;
+  touchCount += 1;
+  const isOn = level > 0;
+
+  return {
+    level,
+    mode: modes[level],
+    isOn,
+    touchCount
+  };
+}
+
+// Connect the HTML control to the model:
+touch.addEventListener("click", () => {
+  touchControl();
+  render(); // Update the text and CSS.
+});</code></pre></div>
+<div class="annotations"><article><span>01</span><div><h3>Remember the current mode</h3><p><code>let</code> declares values that can change. <code>const</code> keeps the modes array reference fixed. Array positions start at zero.</p></div></article><article><span>02</span><div><h3>Advance, then wrap around</h3><p><code>%</code> is JavaScript’s remainder operator. For these nonnegative integers, adding one and taking the remainder after division by four gives the next state.</p><p id="math" class="math"></p></div></article><article><span>03</span><div><h3>Derive the output</h3><p><code>level > 0</code> yields true when the lamp is on. Calculating it from level keeps the two values consistent.</p></div></article></div></div>
+<details><summary>How do HTML, CSS and JavaScript connect?</summary><p>The demo uses a native HTML button. A click event supports touch, mouse and keyboard activation. JavaScript sets the scene’s data-level attribute; CSS responds by changing the glow. Programming a physical lamp would require hardware-specific touch detection and light-output code.</p><pre><code>&lt;button id="touch"&gt;⏻&lt;/button&gt;
+
+/* CSS reads the current visual state. */
+.scene[data-level="3"] { --glow: 1; }
+
+// JavaScript updates that state in render().
+document.getElementById("scene").dataset.level = level;</code></pre></details>
+<p class="sources">Read the complete source: <a href="app.js" download>JavaScript ↓</a><a href="styles.css" download>CSS ↓</a><a href="index.html" download>HTML ↓</a></p></section></main><footer><a class="brand" href="#">touch <em>/</em> light</a><p>A real-world object. A four-state model.</p><a href="#experiment">Try another cycle ↑</a></footer><script src="app.js"></script></body></html>
